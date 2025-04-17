@@ -112,14 +112,15 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			part.Close()
 		}
 	}
-
+	log.Println(len(folderNameList))
 	// フォルダ名が複数指定されていればエラーのレスポンス
 	if len(folderNameList) > 1 {
 		http.Error(w, fmt.Sprintf("You cannot send multiple folders\nfolders:%s", folderNameList), http.StatusOK)
 		return
 	} else if len(folderNameList) == 0 || folderNameList[0] == "" { //指定が無ければフォルダ名をdefaultに
-		folderNameList = append(folderNameList, "default")
+		folderNameList = append([]string{"default"}, folderNameList...)
 	}
+	log.Println(folderNameList)
 
 	// フォルダ名をリクエストの指定フォルダに設定
 	folderName := folderNameList[0]
