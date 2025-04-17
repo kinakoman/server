@@ -1,5 +1,4 @@
-// 画像の一覧取得に対応
-// レスポンスはjsonの配列
+// フォルダの一覧表示に対応
 package handler
 
 import (
@@ -9,21 +8,17 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 // レスポンスのJSON形式
-type ListResponse struct {
-	Id        int       `json:"id"`
-	Folder    string    `json:"folder"`
-	Filename  string    `json:"filename"`
-	Timestamp time.Time `json:"timestamp"`
+type ListFolderResponse struct {
+	Folder string `json:"folder"`
 }
 
-// /image/list/
-type ListHandler struct{}
+// /image/folder/list/
+type ListFolderHandler struct{}
 
-func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ListFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// データベースとの接続を確立
 	con, err := connection.ConnectDB()
 	if err != nil {
@@ -33,7 +28,7 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer con.Close()
 
 	// データベースから全データを取得
-	query := fmt.Sprintf("SELECT * FROM %s WHERE filename IS NOT NULL", os.Getenv("IMAGE_SERVER_NAME"))
+	query := fmt.Sprintf("SELECT DISTINCT folder FROM %s", os.Getenv("IMAGE_SERVER_NAME"))
 	row, err := con.Query(query)
 	if err != nil {
 		http.Error(w, "Failed to read Database", http.StatusOK)
@@ -41,27 +36,20 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 取得したデータを格納
-	var res []*ListResponse
+	var res []*ListFolderResponse
 
 	// データベースから取得した各行について処理
 	for row.Next() {
 		// 変数定義
-		var (
-			id               int
-			folder, filename string
-			timestamp        time.Time
-		)
+		var folder string
 
 		// データを取得
-		if err := row.Scan(&id, &folder, &filename, &timestamp); err != nil {
+		if err := row.Scan(&folder); err != nil {
 			log.Println("Failed to read row")
 		}
 		// データを配列に格納
-		res = append(res, &ListResponse{
-			Id:        id,
-			Folder:    folder,
-			Filename:  filename,
-			Timestamp: timestamp,
+		res = append(res, &ListFolderResponse{
+			Folder: folder,
 		})
 	}
 	if err := row.Close(); err != nil {

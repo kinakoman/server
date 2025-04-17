@@ -13,9 +13,9 @@ type MakeFolderRequest struct {
 	Folder string `json:"folder"`
 }
 
-type MakeFolderHandler struct{}
+type CreateFolderHandler struct{}
 
-func (h *MakeFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *CreateFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var req MakeFolderRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -26,7 +26,7 @@ func (h *MakeFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	targetFolder := req.Folder
 	// 画像保存先ディレクトリを取得
 	originalImageFolder := os.Getenv("ORIGINAL_IMAGE_STORAGE_PATH")
-	compressedImageFolder := os.Getenv("COMPRESSED_IMAGE_STRAGE_PATH")
+	compressedImageFolder := os.Getenv("COMPRESSED_IMAGE_STORAGE_PATH")
 	// 消去対象のフォルダパスを取得
 	targetOriginalFolder := filepath.Join(originalImageFolder, targetFolder)
 	targetCompressedFolder := filepath.Join(compressedImageFolder, targetFolder)

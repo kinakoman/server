@@ -26,7 +26,7 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 送信された画像を保存するディレクトリ
 	imageStoragePath := os.Getenv("ORIGINAL_IMAGE_STORAGE_PATH")
 	// 送信された画像の軽量版の保存先ディレクトリ
-	compressedStoragePath := os.Getenv("COMPRESSED_IMAGE_STRAGE_PATH")
+	compressedStoragePath := os.Getenv("COMPRESSED_IMAGE_STORAGE_PATH")
 
 	// 画像の一次保存先
 	temporaryFolder := "temporary-folder"
@@ -112,7 +112,6 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			part.Close()
 		}
 	}
-	log.Println(len(folderNameList))
 	// フォルダ名が複数指定されていればエラーのレスポンス
 	if len(folderNameList) > 1 {
 		http.Error(w, fmt.Sprintf("You cannot send multiple folders\nfolders:%s", folderNameList), http.StatusOK)
@@ -120,7 +119,6 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else if len(folderNameList) == 0 || folderNameList[0] == "" { //指定が無ければフォルダ名をdefaultに
 		folderNameList = append([]string{"default"}, folderNameList...)
 	}
-	log.Println(folderNameList)
 
 	// フォルダ名をリクエストの指定フォルダに設定
 	folderName := folderNameList[0]

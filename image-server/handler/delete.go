@@ -30,7 +30,15 @@ func (h *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 画像保存先ディレクトリを取得
 	originalImageFolder := os.Getenv("ORIGINAL_IMAGE_STORAGE_PATH")
-	compressedImageFolder := os.Getenv("COMPRESSED_IMAGE_STRAGE_PATH")
+	compressedImageFolder := os.Getenv("COMPRESSED_IMAGE_STORAGE_PATH")
+
+	// データベースとの接続を確立
+	con, err := connection.ConnectDB()
+	if err != nil {
+		http.Error(w, "DataBase is NOT running", http.StatusOK)
+		return
+	}
+	defer con.Close()
 
 	for _, req := range requests {
 		// 消去対象のフォルダ名とファイルを取得
@@ -47,13 +55,6 @@ func (h *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println("Remove Image Error:", targetCompressedImage)
 		}
 
-		// データベースとの接続を確立
-		con, err := connection.ConnectDB()
-		if err != nil {
-			http.Error(w, "DataBase is NOT running", http.StatusOK)
-			return
-		}
-		defer con.Close()
 		// データベースから画像情報を削除
 		if err := connection.ExecDelete(con, targetFolder, targetFilename); err != nil {
 			log.Println("Failed to Delete Image Info : ", targetFolder, targetFilename)
