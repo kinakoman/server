@@ -18,10 +18,17 @@ func initRoute() *http.ServeMux {
 
 	// ルーティングの設定
 	mux.Handle("/", module.AccessCheckMiddleware(&handler.RootHandler{}))
+	// 画像のアップロード
 	mux.Handle("POST /image/upload/", module.AccessCheckMiddleware(&handler.UploadHandler{}))
 	// 画像リスト取得
 	mux.Handle("GET /image/list/", module.AccessCheckMiddleware(&handler.ListHandler{}))
 	// 画像情報取得
+	// 画像削除
+	mux.Handle("POST /image/delete/", module.AccessCheckMiddleware(&handler.DeleteHandler{}))
+	// フォルダの削除
+	mux.Handle("POST /image/folder/delete/", module.AccessCheckMiddleware(&handler.DeleteFolderHandler{}))
+	// フォルダの作成
+	mux.Handle("POST /image/folder/make/", module.AccessCheckMiddleware(&handler.MakeFolderHandler{}))
 	return mux
 
 }

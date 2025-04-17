@@ -47,3 +47,18 @@ func ExecDelete(db *sql.DB, folder string, filename string) error {
 	_, err := db.Exec(query, folder, filename)
 	return err
 }
+
+// フォルダの削除
+func ExecDeleteFolder(db *sql.DB, folder string) error {
+	query := fmt.Sprintf("DELETE FROM %s WHERE folder =?", os.Getenv("IMAGE_SERVER_NAME"))
+	_, err := db.Exec(query, folder)
+	return err
+}
+
+// フォルダの作成
+func ExecMakeFolder(db *sql.DB, folder string) error {
+	// filenameはnullとしてデータベースにfolderを登録
+	query := fmt.Sprintf(" INSERT INTO %s (folder) VALUES (?)", os.Getenv("IMAGE_SERVER_NAME"))
+	_, err := db.Exec(query, folder)
+	return err
+}

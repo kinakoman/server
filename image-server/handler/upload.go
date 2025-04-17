@@ -24,9 +24,9 @@ type UploadHandler struct{}
 func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 送信された画像を保存するディレクトリ
-	imageStoragePath := os.Getenv("IMAGE_STORAGE_PATH")
+	imageStoragePath := os.Getenv("ORIGINAL_IMAGE_STORAGE_PATH")
 	// 送信された画像の軽量版の保存先ディレクトリ
-	compressedStoragePath := "minimize-image"
+	compressedStoragePath := os.Getenv("COMPRESSED_IMAGE_STRAGE_PATH")
 
 	// 画像の一次保存先
 	temporaryFolder := "temporary-folder"
