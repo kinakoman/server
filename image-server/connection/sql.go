@@ -41,6 +41,7 @@ func ExecSave(db *sql.DB, folder string, filename string) error {
 	return err
 }
 
+// 画像情報の削除を実行
 func ExecDelete(db *sql.DB, folder string, filename string) error {
 	query := fmt.Sprintf("DELETE FROM %s WHERE folder=? AND filename=?", os.Getenv("IMAGE_SERVER_NAME"))
 	_, err := db.Exec(query, folder, filename)
