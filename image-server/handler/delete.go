@@ -5,6 +5,7 @@ package handler
 import (
 	"encoding/json"
 	"image-server/connection"
+	"image-server/module"
 	"log"
 	"net/http"
 	"os"
@@ -43,7 +44,27 @@ func (h *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, req := range requests {
 		// 消去対象のフォルダ名とファイルを取得
 		targetFolder := req.Folder
+		// フォルダ名のバリデーションを実行
+		if err := module.ValdateRequestPath(originalImageFolder, targetFolder); err != nil {
+			http.Error(w, "invalid folder name", http.StatusBadGateway)
+			return
+		}
+		if err := module.ValdateRequestPath(compressedImageFolder, targetFolder); err != nil {
+			http.Error(w, "invalid folder name", http.StatusBadGateway)
+			return
+		}
+		// 消去対象のファイル名を取得
 		targetFilename := req.Filename
+		// ファイル名のバリデーションを実行
+		if err := module.ValdateRequestPath(originalImageFolder, targetFilename); err != nil {
+			http.Error(w, "invalid folder name", http.StatusBadGateway)
+			return
+		}
+		if err := module.ValdateRequestPath(compressedImageFolder, targetFilename); err != nil {
+			http.Error(w, "invalid folder name", http.StatusBadGateway)
+			return
+		}
+
 		// 対象ファイルのパスを取得
 		targetOriginalImage := filepath.Join(originalImageFolder, targetFolder, targetFilename)
 		targetCompressedImage := filepath.Join(compressedImageFolder, targetFolder, targetFilename)

@@ -71,7 +71,7 @@ func (h *RootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"  e.preventDefault();\n" +
 		"  const folder = document.getElementById('deleteFolder').value.trim();\n" +
 		"  if (!folder) return;\n" +
-		"  fetch('/image/folder/make/', {\n" +
+		"  fetch('/image/folder/delete/', {\n" +
 		"    method: 'POST',\n" +
 		"    headers: { 'Content-Type': 'application/json' },\n" +
 		"    body: JSON.stringify({ folder: folder })\n" +

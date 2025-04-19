@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"image-server/connection"
+	"image-server/module"
 	"log"
 	"net/http"
 	"os"
@@ -22,11 +23,22 @@ func (h *CreateFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Invaled Value", http.StatusBadGateway)
 		return
 	}
-
+	// 作成するフォルダ名を取得
 	targetFolder := req.Folder
+
 	// 画像保存先ディレクトリを取得
 	originalImageFolder := os.Getenv("ORIGINAL_IMAGE_STORAGE_PATH")
 	compressedImageFolder := os.Getenv("COMPRESSED_IMAGE_STORAGE_PATH")
+
+	// フォルダ名のバリデーションを実行
+	if err := module.ValdateRequestPath(originalImageFolder, targetFolder); err != nil {
+		http.Error(w, "invalid folder name", http.StatusBadGateway)
+		return
+	}
+	if err := module.ValdateRequestPath(compressedImageFolder, targetFolder); err != nil {
+		http.Error(w, "invalid folder name", http.StatusBadGateway)
+		return
+	}
 	// 消去対象のフォルダパスを取得
 	targetOriginalFolder := filepath.Join(originalImageFolder, targetFolder)
 	targetCompressedFolder := filepath.Join(compressedImageFolder, targetFolder)
