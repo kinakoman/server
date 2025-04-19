@@ -18,7 +18,7 @@ func ConnectDB() (*sql.DB, error) {
 
 	// データベースアクセスのDSN
 	// 標準時はMySQLに合わせてJSTに
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?loc=Asia%%2FTokyo", dbUser, dbPassword, dbHost, dbPort, dbName)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Asia%%2FTokyo", dbUser, dbPassword, dbHost, dbPort, dbName)
 
 	// データベースに接続
 	db, err := sql.Open("mysql", dsn)
