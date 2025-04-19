@@ -23,7 +23,7 @@ func initRoute(BackUp *module.BackUpLog) *http.ServeMux {
 	mux.Handle("/", module.SetMiddleware(homepageProxy, BackUp))
 
 	// test用ルート
-	mux.Handle("/test/", auth.AuthMiddleware(&handler.RootHandler{}))
+	mux.Handle("/test", auth.AuthMiddleware(&handler.RootHandler{}))
 
 	// imageハンドラ
 	imageProxy := proxy.InitImageProxy() // image-serverのプロキシ
@@ -34,7 +34,7 @@ func initRoute(BackUp *module.BackUpLog) *http.ServeMux {
 	mux.Handle("/logout", &auth.LogoutHandler{})
 
 	// サーバーモニターへのステータス変更ハンドラ
-	mux.Handle("POST /status/", &handler.StatusHandler{})
+	mux.Handle("POST /status", &handler.StatusHandler{})
 	return mux
 }
 

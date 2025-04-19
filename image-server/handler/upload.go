@@ -132,11 +132,33 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// データベースとの接続を確立
+	con, err := connection.ConnectDB()
+	if err != nil {
+		http.Error(w, "DataBase is NOT running", http.StatusOK)
+		return
+	}
+	defer con.Close()
+
 	// リクエストで指定されたフォルダの最終ディレクトリに保存された画像ファイル
 	var finalSaved []string
 
-	// 最終的な保存先ディレクトリを作成
+	// 最終的な保存先ディレクトリ
 	saveFolderPath := filepath.Join(imageStoragePath, folderName)
+
+	// フォルダがすでに存在しているかチェック
+	if _, err := os.Stat(saveFolderPath); os.IsNotExist(err) {
+		// データベースから対象のフォルダのデータ全てを削除
+		if err := connection.ExecMakeFolder(con, folderName); err != nil {
+			log.Println("Failed to Make Folder Info : ", folderName)
+		}
+		log.Println("Folder created:", saveFolderPath)
+	} else if err != nil {
+		// stat に失敗（権限エラーなど）
+		http.Error(w, "Failed to check folder existence", http.StatusInternalServerError)
+		return
+	}
+	// ディレクトリの作成
 	if err := os.MkdirAll(saveFolderPath, os.ModePerm); err != nil {
 		http.Error(w, "Failed to Create folder to save images", http.StatusOK)
 		return
@@ -148,14 +170,6 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to Create folder to save images", http.StatusOK)
 		return
 	}
-
-	// データベースとの接続を確立
-	con, err := connection.ConnectDB()
-	if err != nil {
-		http.Error(w, "DataBase is NOT running", http.StatusOK)
-		return
-	}
-	defer con.Close()
 
 	// 一次保存が完了したファイルを繰り返し実行
 	for _, fileName := range savedTemporary {
