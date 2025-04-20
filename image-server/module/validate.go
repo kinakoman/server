@@ -1,29 +1,28 @@
 // 入力されたパスのバリデーション
 // パスの値そのものに加えて、basePath(配下にパスを置きたいパス)以下に配置されているかチェック
-// エラー!=nilで入力されたパスは不正
+// 戻り値trueのパスは不正
 package module
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-func ValdateRequestPath(basePath string, request string) error {
+func ValdateRequestPath(basePath string, request string) bool {
 	// パスが空白の場合
 	if request == "" {
-		return errors.New("value is empty")
+		return true
 	}
 	// パスの長さ100以上の時
 	if len(request) > 100 {
-		return errors.New("value is too long")
+		return true
 	}
 	// パスに不正な文字が使われている
 	invalidChars := regexp.MustCompile(`[<>:"\\|?*\x00-\x1F]`)
 	if invalidChars.MatchString(request) {
-		return errors.New("value contain invalid character")
+		return true
 	}
 	// basePathとrequestの結合
 	fullPath := filepath.Join(basePath, request)
@@ -33,8 +32,8 @@ func ValdateRequestPath(basePath string, request string) error {
 	basePathClean := filepath.Clean(basePath) + string(os.PathSeparator)
 	// requestがbasePathの配下になっているかチェック
 	if !strings.HasPrefix(cleanPath, basePathClean) {
-		return errors.New("value contains escape")
+		return true
 	}
 
-	return nil
+	return false
 }

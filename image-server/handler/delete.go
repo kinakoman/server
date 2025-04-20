@@ -47,23 +47,16 @@ func (h *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 消去対象のフォルダ名とファイルを取得
 		targetFolder := req.Folder
 		// フォルダ名のバリデーションを実行
-		if err := module.ValdateRequestPath(originalImageFolder, targetFolder); err != nil {
-			http.Error(w, "invalid folder name", http.StatusBadGateway)
+		if module.ValdateRequestPath(originalImageFolder, targetFolder) || module.ValdateRequestPath(compressedImageFolder, targetFolder) {
+			log.Println("detect invalid file")
 			continue
 		}
-		if err := module.ValdateRequestPath(compressedImageFolder, targetFolder); err != nil {
-			http.Error(w, "invalid folder name", http.StatusBadGateway)
-			continue
-		}
+
 		// 消去対象のファイル名を取得
 		targetFilename := req.Filename
 		// ファイル名のバリデーションを実行
-		if err := module.ValdateRequestPath(originalImageFolder, targetFilename); err != nil {
-			http.Error(w, "invalid folder name", http.StatusBadGateway)
-			continue
-		}
-		if err := module.ValdateRequestPath(compressedImageFolder, targetFilename); err != nil {
-			http.Error(w, "invalid folder name", http.StatusBadGateway)
+		if module.ValdateRequestPath(originalImageFolder, targetFilename) || module.ValdateRequestPath(compressedImageFolder, targetFilename) {
+			log.Println("detect invalid file")
 			continue
 		}
 

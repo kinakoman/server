@@ -123,11 +123,7 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// フォルダ名をリクエストの指定フォルダに設定
 	folderName := folderNameList[0]
 	// フォルダ名のバリデーションを実行
-	if err := module.ValdateRequestPath(imageStoragePath, folderName); err != nil {
-		http.Error(w, "invalid folder name", http.StatusBadGateway)
-		return
-	}
-	if err := module.ValdateRequestPath(compressedStoragePath, folderName); err != nil {
+	if module.ValdateRequestPath(imageStoragePath, folderName) || module.ValdateRequestPath(compressedStoragePath, folderName) {
 		http.Error(w, "invalid folder name", http.StatusBadGateway)
 		return
 	}

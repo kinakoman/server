@@ -34,7 +34,7 @@ func initRoute(BackUp *module.BackUpLog) *http.ServeMux {
 	mux.Handle("/logout", &auth.LogoutHandler{})
 
 	// サーバーモニターへのステータス変更ハンドラ
-	mux.Handle("POST /status", &handler.StatusHandler{})
+	mux.Handle("POST /status/", &handler.StatusHandler{})
 	return mux
 }
 
