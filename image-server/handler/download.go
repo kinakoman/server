@@ -1,34 +1,29 @@
 package handler
 
 import (
-	"encoding/json"
 	"image-server/module"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
-type DownloadRequest struct {
-	Folder   string `json:"folder"`
-	Filename string `json:"filename"`
-}
-
 type DownloadHandler struct{}
 
 func (h *DownloadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var req DownloadRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid Value", http.StatusBadGateway)
+
+	quality := r.URL.Query()["quality"]
+	folder := r.URL.Query()["folder"]
+	filename := r.URL.Query()["filename"]
+
+	if len(quality) > 1 || len(folder) > 1 || len(filename) > 1 {
+		http.Error(w, "You must choose one Values", http.StatusOK)
 		return
 	}
 
-	quality := r.URL.Query()["quality"]
+	imagePath := filepath.Join(folder[0], filename[0])
 
-	if len(quality) > 1 {
-		http.Error(w, "You must choose one QUALITY", http.StatusOK)
-	}
-
-	imagePath := filepath.Join(req.Folder, req.Filename)
+	log.Println(imagePath)
 
 	// 画像保存先ディレクトリを取得
 	originalImageFolder := os.Getenv("ORIGINAL_IMAGE_STORAGE_PATH")
