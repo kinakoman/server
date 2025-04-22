@@ -30,6 +30,7 @@ func initRoute() *http.ServeMux {
 	mux.Handle("POST /image/folder/create/", module.AccessCheckMiddleware(&handler.CreateFolderHandler{}))
 	// フォルダリスト取得
 	mux.Handle("GET /image/folder/list/", module.AccessCheckMiddleware(&handler.ListFolderHandler{}))
+	// 画像ダウンロード
 	mux.Handle("GET /image/download", module.AccessCheckMiddleware(&handler.DownloadHandler{}))
 	return mux
 

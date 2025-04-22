@@ -2,14 +2,11 @@ package proxy
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
-	"strconv"
-	"strings"
 )
 
 // imageプロキシの初期化関数
@@ -28,7 +25,7 @@ func InitImageProxy() *httputil.ReverseProxy {
 	// リクエストの修正を登録
 	imageProxy.Director = imageDirector
 	// レスポンス修正を登録
-	imageProxy.ModifyResponse = imageModifyResponse
+	// imageProxy.ModifyResponse = imageModifyResponse
 	// エラーハンドラを登録
 	imageProxy.ErrorHandler = imageErrorHandler
 
@@ -45,20 +42,20 @@ func imageDirector(r *http.Request) {
 }
 
 // ModifyResponse
-func imageModifyResponse(r *http.Response) error {
-	// ステータス200番以外は処理を実行
-	if r.StatusCode != http.StatusOK {
-		defer r.Body.Close()
-
-		// ステータスを502番に書き換え
-		r.StatusCode = http.StatusBadGateway
-		newBody := fmt.Sprintf("%s\n", http.StatusText(http.StatusBadGateway))
-		r.Body = io.NopCloser(strings.NewReader(newBody))
-		r.Header.Set("Content-Length", strconv.Itoa(len(newBody)))
-		r.TransferEncoding = nil
-	}
-	return nil
-}
+// func imageModifyResponse(r *http.Response) error {
+// 	// ステータス200番以外は処理を実行
+// 	if r.StatusCode != http.StatusOK {
+// 		defer r.Body.Close()
+// 		log.Println("now", r.Body)
+// 		// ステータスを502番に書き換え
+// 		r.StatusCode = http.StatusBadGateway
+// 		newBody := fmt.Sprintf("%s\n", http.StatusText(http.StatusBadGateway))
+// 		r.Body = io.NopCloser(strings.NewReader(newBody))
+// 		r.Header.Set("Content-Length", strconv.Itoa(len(newBody)))
+// 		r.TransferEncoding = nil
+// 	}
+// 	return nil
+// }
 
 // 停止時のエラーハンドリング
 func imageErrorHandler(w http.ResponseWriter, r *http.Request, err error) {

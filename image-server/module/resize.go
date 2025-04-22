@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
+	"image/png"
 	"io"
 	"path/filepath"
 	"strings"
@@ -28,6 +29,8 @@ func Resize(srcPath string, dstPath string) error {
 	switch ext {
 	case ".jpg", ".jpeg":
 		img, err = jpeg.Decode(file)
+	case ".png":
+		img, err = png.Decode(file)
 	case ".heic":
 		data, err := io.ReadAll(file)
 		if err != nil {
