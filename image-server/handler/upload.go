@@ -182,7 +182,6 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// ファイルを一次保存先から最終保存先に移動
 		if err := os.Rename(temporarySavePath, finalSavePath); err != nil { // 保存に失敗
-			log.Println(err)
 			// データベースから該当ファイル情報を削除
 			if err := connection.ExecDelete(con, folderName, fileName); err != nil {
 				log.Println("Save failed, but the information remains in the database")
