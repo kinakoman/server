@@ -100,3 +100,11 @@ func ExecMakeFolder(db *sql.DB, folder string) error {
 	_, err := db.Exec(query, folder)
 	return err
 }
+
+// 画像の移動
+// ターゲットフォルダは画像の移動先ファイル
+func ExecMoveFolder(db *sql.DB, targetFolder string, id int) error {
+	query := fmt.Sprintf("UPDATE %s SET folder = ? WHERE id=?", os.Getenv("IMAGE_SERVER_NAME"))
+	_, err := db.Exec(query, targetFolder, id)
+	return err
+}

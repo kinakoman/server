@@ -22,11 +22,8 @@ func initRoute(BackUp *module.BackUpLog) *http.ServeMux {
 	homepageProxy := proxy.InitHomepageProxy() // homepage-serverのプロキシ
 	mux.Handle("/", module.SetMiddleware(homepageProxy, BackUp))
 
-	// csrfトークン取得ハンドラ
+	// csrfトークン取得ハンドラ(CSRFの認証はスキップ)
 	mux.Handle("GET /csrf-token", module.SetMiddleware(&auth.GetCsrfTokenHandler{}, BackUp))
-
-	// test用ルート
-	// mux.Handle("/test/", auth.AuthMiddleware(&handler.RootHandler{}))
 
 	// imageハンドラ
 	imageProxy := proxy.InitImageProxy() // image-serverのプロキシ
