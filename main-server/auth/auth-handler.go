@@ -58,7 +58,7 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode, // クロスサイト送信拒否
 		Path:     "/",
 		// Secure: true,
-		Expires: time.Now().Add(10 * time.Second), // 有効期限は30分
+		Expires: time.Now().Add(30 * time.Minute), // 有効期限は30分
 	}
 	// クッキーのセット
 	http.SetCookie(w, cookie)

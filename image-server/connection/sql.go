@@ -42,10 +42,48 @@ func ExecSave(db *sql.DB, folder string, filename string) error {
 }
 
 // 画像情報の削除を実行
-func ExecDelete(db *sql.DB, folder string, filename string) error {
-	query := fmt.Sprintf("DELETE FROM %s WHERE folder=? AND filename=?", os.Getenv("IMAGE_SERVER_NAME"))
+func ExecDelete(db *sql.DB, id int, folder string, filename string) error {
+	query := fmt.Sprintf("DELETE FROM %s WHERE folder=? AND filename=? AND id=?", os.Getenv("IMAGE_SERVER_NAME"))
+	_, err := db.Exec(query, folder, filename, id)
+	return err
+}
+
+// 該当画像情報のうち、最新のものを削除
+func ExecDeleteLatest(db *sql.DB, folder string, filename string) error {
+	query := fmt.Sprintf(`
+	DELETE FROM %s 
+	WHERE id = (
+			SELECT id FROM (
+					SELECT id FROM %s 
+					WHERE folder = ? AND filename = ?
+					ORDER BY timestamp DESC
+					LIMIT 1
+			) AS tmp
+	)
+`, os.Getenv("IMAGE_SERVER_NAME"), os.Getenv("IMAGE_SERVER_NAME"))
 	_, err := db.Exec(query, folder, filename)
 	return err
+}
+
+// 画像データベースにフォルダ、ファイルが存在しているかチェック
+// trueで存在していない、falseで存在する
+// エラー時は存在しているとして処理する
+func ImageDataNoExist(db *sql.DB, folder string, filename string) bool {
+	query := fmt.Sprintf(" SELECT 1 FROM %s WHERE folder=? AND filename=? LIMIT 1", os.Getenv("IMAGE_SERVER_NAME"))
+	row, err := db.Query(query, folder, filename)
+	if err != nil {
+		return false
+	}
+
+	var dummy int
+	err = row.Scan(&dummy)
+	if err == sql.ErrNoRows {
+		return true
+	} else if err != nil {
+		return false
+	}
+
+	return false
 }
 
 // フォルダの削除

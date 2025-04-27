@@ -193,7 +193,7 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			// フラグが立っていなければデータベースをロールバック
 			if !flag {
 				// データベースから該当ファイル情報を削除
-				if err := connection.ExecDelete(con, folderName, fileName); err != nil {
+				if err := connection.ExecDeleteLatest(con, folderName, fileName); err != nil {
 					log.Println("Save failed, but the information remains in the database")
 				}
 			}
@@ -207,8 +207,8 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err := os.RemoveAll(finalSavePath); err != nil {
 				log.Println("Original image saving was successful, lightweight version failed:", finalSavePath)
 			}
-			// データベースから該当ファイル情報を削除
-			if err := connection.ExecDelete(con, folderName, fileName); err != nil {
+			// データベースから該当ファイル情報を削除(ロールバック)
+			if err := connection.ExecDeleteLatest(con, folderName, fileName); err != nil {
 				log.Println("Save failed, but the information remains in the database")
 			}
 			continue

@@ -14,6 +14,7 @@ import (
 
 // deleteリクエストのJSON
 type DeleteRequestStruct struct {
+	Id       int    `json:"id"`
 	Folder   string `json:"folder"`
 	Filename string `json:"filename"`
 }
@@ -60,23 +61,28 @@ func (h *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// 対象ファイルのパスを取得
-		targetOriginalImage := filepath.Join(originalImageFolder, targetFolder, targetFilename)
-		targetCompressedImage := filepath.Join(compressedImageFolder, targetFolder, targetFilename)
-		// オリジナル、軽量版の画像を削除
-		if err := os.RemoveAll(targetOriginalImage); err != nil {
-			log.Println("Remove Image Error:", targetOriginalImage)
-			continue
-		}
-		if err := os.RemoveAll(targetCompressedImage); err != nil {
-			log.Println("Remove Image Error:", targetCompressedImage)
+		// 消去対象のidを取得
+		targetId := req.Id
+
+		// データベースから画像情報を削除
+		if err := connection.ExecDelete(con, targetId, targetFolder, targetFilename); err != nil {
+			log.Println("Failed to Delete Image Info : ", targetFolder, targetFilename)
 			continue
 		}
 
-		// データベースから画像情報を削除
-		if err := connection.ExecDelete(con, targetFolder, targetFilename); err != nil {
-			log.Println("Failed to Delete Image Info : ", targetFolder, targetFilename)
-			continue
+		if connection.ImageDataNoExist(con, targetFolder, targetFilename) {
+			// 対象ファイルのパスを取得
+			targetOriginalImage := filepath.Join(originalImageFolder, targetFolder, targetFilename)
+			targetCompressedImage := filepath.Join(compressedImageFolder, targetFolder, targetFilename)
+			// オリジナル、軽量版の画像を削除
+			if err := os.RemoveAll(targetOriginalImage); err != nil {
+				log.Println("Remove Image Error:", targetOriginalImage)
+				continue
+			}
+			if err := os.RemoveAll(targetCompressedImage); err != nil {
+				log.Println("Remove Image Error:", targetCompressedImage)
+				continue
+			}
 		}
 
 		deleted = append(deleted, &DeleteRequestStruct{
