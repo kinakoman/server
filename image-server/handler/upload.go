@@ -182,9 +182,20 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// ファイルを一次保存先から最終保存先に移動
 		if err := os.Rename(temporarySavePath, finalSavePath); err != nil { // 保存に失敗
-			// データベースから該当ファイル情報を削除
-			if err := connection.ExecDelete(con, folderName, fileName); err != nil {
-				log.Println("Save failed, but the information remains in the database")
+			// すでに同名のファイルが保存完了しているかチェック
+			var flag bool
+			for _, savedFilename := range finalSaved {
+				if savedFilename == fileName {
+					// 保存済みファイルに同名ファイルがあればフラグを立てる
+					flag = true
+				}
+			}
+			// フラグが立っていなければデータベースをロールバック
+			if !flag {
+				// データベースから該当ファイル情報を削除
+				if err := connection.ExecDelete(con, folderName, fileName); err != nil {
+					log.Println("Save failed, but the information remains in the database")
+				}
 			}
 			continue
 		}

@@ -12,15 +12,24 @@ func AuthMiddleware(h http.Handler) http.Handler {
 		cookie, err := r.Cookie(os.Getenv("COOKIE_SESSION_NAME"))
 		// 	クッキーがなければ/loginへリダイレクト
 		if err != nil {
+			// ブラウザ以外のアクセスにはセッションが無いことをレスポンス
+			if r.Method == http.MethodPost || r.URL.Path == "/csrf-token" {
+				http.Error(w, "You Need New Session ID", http.StatusBadGateway)
+				return
+			}
+			// ブラウザはログインにリダイレクト
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 		//  クッキーのセッションID有効化チェック
 		// セッションが無効なら/loginへリダイレクト
 		if _, valid := ValidateSession(cookie.Value); !valid {
-			if r.Method == http.MethodPost {
-				http.Error(w, "Session Expired", http.StatusBadGateway)
+			if r.Method == http.MethodPost || r.URL.Path == "/csrf-token" {
+				// ブラウザ以外のアクセスにはセッションが無いことをレスポンス
+				http.Error(w, "You Need New Session ID", http.StatusBadGateway)
+				return
 			}
+			// ブラウザはログインにリダイレクト
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
