@@ -24,6 +24,10 @@ func ValdateRequestPath(basePath string, request string) bool {
 	if invalidChars.MatchString(request) {
 		return true
 	}
+	// 相対パス記号から開始している
+	if strings.HasPrefix(request, "./") {
+		return true
+	}
 	// basePathとrequestの結合
 	fullPath := filepath.Join(basePath, request)
 	// 相対パスなどを正規化

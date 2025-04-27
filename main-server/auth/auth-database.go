@@ -42,8 +42,8 @@ func ValidateUser(username string, password string) (int, bool) {
 	return id, true
 }
 
-// 発行したセッションをデータベースに保存、戻り値err!=nilで保存失敗
-func SaveSession(sessionID string, userID int) error {
+// 発行したセッションとcsrfトークンをデータベースに保存、戻り値err!=nilで保存失敗
+func SaveSession(sessionID string, csrfToken string, userID int) error {
 	// セッションデータベースにアクセス
 	con, err := connection.ConnectDB()
 	if err != nil {
@@ -56,8 +56,8 @@ func SaveSession(sessionID string, userID int) error {
 	expires := time.Now().Add(30 * time.Minute)
 
 	// セッション、ユーザーID、有効期限を登録
-	query := fmt.Sprintf("INSERT INTO %s (session_id,user_id,expires_at) values (?,?,?)", os.Getenv("AUTH_SESSION_TABLE"))
-	_, err = con.Exec(query, sessionID, userID, expires)
+	query := fmt.Sprintf("INSERT INTO %s (session_id,csrf_token,user_id,expires_at) values (?,?,?,?)", os.Getenv("AUTH_SESSION_TABLE"))
+	_, err = con.Exec(query, sessionID, csrfToken, userID, expires)
 	return err
 }
 
@@ -89,6 +89,51 @@ func ValidateSession(sessionID string) (int, bool) {
 	}
 	// 照合成功
 	return userID, true
+}
+
+// CSRF情報の照合
+func ValidateCsrfToken(csrfToken string) bool {
+	// セッションデータベースにアクセス
+	con, err := connection.ConnectDB()
+	if err != nil {
+		log.Printf("\n----database error----\n%v\n----database error----\n", err)
+		return false
+	}
+	defer con.Close()
+
+	var sessionID string
+
+	// 送られてきたCSRFトークンが生成時のもと一致するかチェック
+	query := fmt.Sprintf("SELECT session_id FROM %s WHERE csrf_token = ?", os.Getenv("AUTH_SESSION_TABLE"))
+	err = con.QueryRow(query, csrfToken).Scan(&sessionID)
+	// セッションID・ユーザーIDが存在しない、または有効期限が切れていれば照合失敗
+	if err != nil {
+		// 照合失敗
+		return false
+	}
+	// 照合成功
+	return true
+}
+
+// CSRFトークンを取得する関数
+func GetCsrfToken(sessionID string) string {
+	// セッションデータベースにアクセス
+	con, err := connection.ConnectDB()
+	if err != nil {
+		log.Printf("\n----database error----\n%v\n----database error----\n", err)
+		return ""
+	}
+	defer con.Close()
+	var csrfToken string
+	// セッションIDからユーザーIDと有効期限を取得
+	query := fmt.Sprintf("SELECT csrf_token FROM %s WHERE session_id = ?", os.Getenv("AUTH_SESSION_TABLE"))
+	err = con.QueryRow(query, sessionID).Scan(&csrfToken)
+	// セッションID・ユーザーIDが存在しない、または有効期限が切れていれば照合失敗
+	if err != nil {
+		// 照合失敗
+		return ""
+	}
+	return csrfToken
 }
 
 // セッションの削除、戻り値err!=nilで削除失敗

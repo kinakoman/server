@@ -20,7 +20,8 @@ func (h *CreateFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	var req MakeFolderRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invaled Value", http.StatusBadGateway)
+		log.Println(err)
+		http.Error(w, "サーバー側のエラーが発生しました。", http.StatusBadGateway)
 		return
 	}
 	// 作成するフォルダ名を取得
@@ -32,7 +33,7 @@ func (h *CreateFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	// フォルダ名のバリデーションを実行
 	if module.ValdateRequestPath(originalImageFolder, targetFolder) || module.ValdateRequestPath(compressedImageFolder, targetFolder) {
-		http.Error(w, "invalid folder name", http.StatusBadGateway)
+		http.Error(w, "フォルダ名に不正な文字が使用されています。", http.StatusBadGateway)
 		return
 	}
 
@@ -49,11 +50,11 @@ func (h *CreateFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	// データベースとの接続を確立
 	con, err := connection.ConnectDB()
 	if err != nil {
-		http.Error(w, "DataBase is NOT running", http.StatusOK)
+		http.Error(w, "データベースが停止しています。", http.StatusOK)
 		return
 	}
 	defer con.Close()
-	// データベースから対象のフォルダのデータ全てを削除
+	// データベースにフォルダ情報を登録
 	if err := connection.ExecMakeFolder(con, targetFolder); err != nil {
 		log.Println("Failed to Make Folder Info : ", targetFolder)
 	}

@@ -100,7 +100,7 @@ func (b *BackUpLog) LogToMySQL() {
 }
 
 // バックアップリクエストを取得して送信
-func (b *BackUpLog) SendBackUpReuest(req BackUpRequestContent) {
+func (b *BackUpLog) SendBackUpRequest(req BackUpRequestContent) {
 	b.BackUpRequestChan <- req
 }
 

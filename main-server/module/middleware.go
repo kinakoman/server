@@ -10,7 +10,7 @@ import (
 
 // ミドルウェアの一括適用
 func SetMiddleware(h http.Handler, Backup *BackUpLog) http.Handler {
-	return LogMiddleware(auth.AuthMiddleware(h), Backup)
+	return LogMiddleware(auth.AuthMiddleware(auth.CsrfCheckMiddleware(h)), Backup)
 }
 
 // ログミドルウェア
@@ -27,7 +27,7 @@ func LogMiddleware(h http.Handler, BackUp *BackUpLog) http.Handler {
 			log.Printf("\n----database error----\n%v\n----database error----\n", err)
 			// バックアップにデータベースの停止を通知
 			BackUp.MySQLIsStop()
-			BackUp.SendBackUpReuest(BackUpRequestContent{Path: r.URL.Path, Method: r.Method, Timestamp: time.Now()})
+			BackUp.SendBackUpRequest(BackUpRequestContent{Path: r.URL.Path, Method: r.Method, Timestamp: time.Now()})
 		} else {
 			// ログインエラーが発生しなければデータベースにログを記録
 			defer db.Close()

@@ -4,6 +4,7 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -35,7 +36,7 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// セッションIDの生成
-	sessionID, err := GenerateSessionID()
+	sessionID, csrfToken, err := GenerateSessionID()
 	if err != nil {
 		log.Println("Failed to start session:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -43,7 +44,7 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// セッションIDの登録
-	if SaveSession(sessionID, userID) != nil {
+	if SaveSession(sessionID, csrfToken, userID) != nil {
 		log.Println("Failed to save session:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -54,6 +55,7 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Name:     os.Getenv("COOKIE_SESSION_NAME"),
 		Value:    sessionID,
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode, // クロスサイト送信拒否
 		Path:     "/",
 		// Secure: true,
 		Expires: time.Now().Add(30 * time.Minute), // 有効期限は30分
@@ -64,14 +66,42 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-// セッションIDの生成関数
-func GenerateSessionID() (string, error) {
-	bytes := make([]byte, 24)
-	_, err := rand.Read(bytes)
+// セッションIDとcsrfトークンの生成関数
+func GenerateSessionID() (string, string, error) {
+	sessionID := make([]byte, 24)
+	csrfToken := make([]byte, 32)
+	_, err := rand.Read(sessionID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(bytes), nil
+	_, err = rand.Read(csrfToken)
+	if err != nil {
+		return "", "", err
+	}
+
+	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(sessionID), base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(csrfToken), nil
+}
+
+// /crsf-token CSRFトークンを取得するハンドラ
+type GetCsrfTokenHandler struct{}
+
+func (h GetCsrfTokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// 	リクエストのクッキーの有無のチェック
+	cookie, err := r.Cookie(os.Getenv("COOKIE_SESSION_NAME"))
+	// 	クッキーがなければ/loginへリダイレクト
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	//  クッキーのセッションID有効化チェック
+	sessionID := cookie.Value
+
+	csrfToken := GetCsrfToken(sessionID)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"token": csrfToken,
+	})
 }
 
 // /logout ハンドラ
@@ -81,6 +111,7 @@ func (h *LogoutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// リクエストのクッキーからセッションIDを取得
 	cookie, err := r.Cookie(os.Getenv("COOKIE_SESSION_NAME"))
 	if err == nil {
+		// セッションIDの削除
 		if err := DeleteSession(cookie.Value); err != nil {
 			// セッションの削除に失敗したらサーバーに記録
 			log.Printf("\n----database error----\nfailed to delete sassion\nsession_id : %s\n----database error----\n", cookie.Value)
@@ -89,9 +120,4 @@ func (h *LogoutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie)
 	}
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
-
-	// セッションデータベースにアクセス
-
-	// セッションIDの削除
-
 }
