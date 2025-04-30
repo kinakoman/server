@@ -24,6 +24,15 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		loginTmpl.Execute(w, nil)
 		return
 	}
+
+	// 既存セッションがあれば破棄
+	if old, err := r.Cookie(os.Getenv("COOKIE_SESSION_NAME")); err == nil {
+		_ = DeleteSession(old.Value)
+		// クッキーも無効化
+		old.MaxAge = -1
+		http.SetCookie(w, old)
+	}
+
 	// リクエストからusernameとpassword取得
 	username := r.FormValue("username")
 	password := r.FormValue("password")

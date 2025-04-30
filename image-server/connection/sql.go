@@ -8,7 +8,20 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// データベースとの接続を確立する関数AC
+// データベースとの接続を確立する関数
+// ConnectDBは、環境変数を使用してMySQLデータベースへの接続を確立します。
+// DSN（データソース名）は以下の環境変数を使用して構築されます:
+//   - DB_USER: データベースのユーザー名
+//   - DB_PASSWORD: データベースのパスワード
+//   - DB_HOST: データベースサーバーのホスト名またはIPアドレス
+//   - DB_PORT: データベースサーバーがリッスンしているポート番号
+//   - DB_NAME: 接続するデータベース名
+//
+// DSNには時間値を解析する設定が含まれており、タイムゾーンはAsia/Tokyoに設定されます。
+//
+// 戻り値:
+//   - *sql.DB: 接続が成功した場合、データベース接続オブジェクトへのポインタ
+//   - error: 接続が失敗した場合、またはデータベースのpingが失敗した場合のエラーオブジェクト
 func ConnectDB() (*sql.DB, error) {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
@@ -103,8 +116,8 @@ func ExecMakeFolder(db *sql.DB, folder string) error {
 
 // 画像の移動
 // ターゲットフォルダは画像の移動先ファイル
-func ExecMoveFolder(db *sql.DB, targetFolder string, id int) error {
+func ExecMoveFolderTx(tx *sql.Tx, targetFolder string, id int) error {
 	query := fmt.Sprintf("UPDATE %s SET folder = ? WHERE id=?", os.Getenv("IMAGE_SERVER_NAME"))
-	_, err := db.Exec(query, targetFolder, id)
+	_, err := tx.Exec(query, targetFolder, id)
 	return err
 }

@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/uuid"
+
 	"image-server/connection"
 	"image-server/module"
 	"io"
@@ -29,7 +31,8 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	compressedStoragePath := os.Getenv("COMPRESSED_IMAGE_STORAGE_PATH")
 
 	// 画像の一次保存先
-	temporaryFolder := "temporary-folder"
+	tempId := uuid.New().String()
+	temporaryFolder := filepath.Join("temporary-", tempId)
 	temporaryFolderPath := fmt.Sprintf("%s/%s", imageStoragePath, temporaryFolder)
 
 	// 一次保存先の作成
@@ -144,7 +147,7 @@ func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// フォルダがすでに存在しているかチェック
 	if _, err := os.Stat(saveFolderPath); os.IsNotExist(err) {
-		// データベースから対象のフォルダのデータ全てを削除
+		// データベースにフォルダを追加
 		if err := connection.ExecMakeFolder(con, folderName); err != nil {
 			log.Println("Failed to Make Folder Info : ", folderName)
 		}

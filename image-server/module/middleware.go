@@ -17,6 +17,9 @@ func AccessCheckMiddleware(h http.Handler) http.Handler {
 		}
 		// ログにメインサーバーからのアクセスを記録
 		log.Println("Access from main-server")
+
 		h.ServeHTTP(w, r)
+
 	})
+
 }

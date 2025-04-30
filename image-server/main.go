@@ -24,6 +24,8 @@ func initRoute() *http.ServeMux {
 	mux.Handle("GET /image/list", module.AccessCheckMiddleware(&handler.ListHandler{}))
 	// 画像削除
 	mux.Handle("POST /image/delete/", module.AccessCheckMiddleware(&handler.DeleteHandler{}))
+	// 画像のフォルダ移動
+	mux.Handle("POST /image/move/", module.AccessCheckMiddleware(&handler.MoveFolderHandler{}))
 	// フォルダの削除
 	mux.Handle("POST /image/folder/delete/", module.AccessCheckMiddleware(&handler.DeleteFolderHandler{}))
 	// フォルダの作成
