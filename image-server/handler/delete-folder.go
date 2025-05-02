@@ -47,7 +47,7 @@ func (h *DeleteFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		targetFolder := req.Folder
 
 		// フォルダ名のバリデーションを実行
-		if module.ValdateRequestPath(originalImageFolder, targetFolder) || module.ValdateRequestPath(compressedImageFolder, targetFolder) {
+		if module.ValidateRequestPath(originalImageFolder, targetFolder) || module.ValidateRequestPath(compressedImageFolder, targetFolder) {
 			log.Println("detect invalid folder")
 			continue
 		}

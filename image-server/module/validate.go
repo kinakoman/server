@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func ValdateRequestPath(basePath string, request string) bool {
+func ValidateRequestPath(basePath string, request string) bool {
 	// パスが空白の場合
 	if request == "" {
 		return true

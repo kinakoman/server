@@ -48,7 +48,7 @@ func (h *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 消去対象のフォルダ名とファイルを取得
 		targetFolder := req.Folder
 		// フォルダ名のバリデーションを実行
-		if module.ValdateRequestPath(originalImageFolder, targetFolder) || module.ValdateRequestPath(compressedImageFolder, targetFolder) {
+		if module.ValidateRequestPath(originalImageFolder, targetFolder) || module.ValidateRequestPath(compressedImageFolder, targetFolder) {
 			log.Println("detect invalid file")
 			continue
 		}
@@ -56,7 +56,7 @@ func (h *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 消去対象のファイル名を取得
 		targetFilename := req.Filename
 		// ファイル名のバリデーションを実行
-		if module.ValdateRequestPath(originalImageFolder, targetFilename) || module.ValdateRequestPath(compressedImageFolder, targetFilename) {
+		if module.ValidateRequestPath(originalImageFolder, targetFilename) || module.ValidateRequestPath(compressedImageFolder, targetFilename) {
 			log.Println("detect invalid file")
 			continue
 		}

@@ -38,22 +38,13 @@ func (h *MoveFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 移動前のフォルダ名
 	prefolder := requests.PreFolder
 
-	// 移動前フォルダのバリデーション
-	if module.ValdateRequestPath(originalImageFolder, prefolder) || module.ValdateRequestPath(compressedImageFolder, prefolder) {
-		http.Error(w, "Invalid folder name", http.StatusBadRequest)
-		return
-	}
 	// 移動前のフォルダパス
 	preOriginalFolder := filepath.Join(originalImageFolder, prefolder)
 	preCompressedFolder := filepath.Join(compressedImageFolder, prefolder)
 
 	// 移動先のフォルダ名
 	postFolder := requests.PostFolder
-	// 移動先フォルダのバリデーション
-	if module.ValdateRequestPath(originalImageFolder, postFolder) || module.ValdateRequestPath(compressedImageFolder, postFolder) {
-		http.Error(w, "Invalid folder name", http.StatusBadRequest)
-		return
-	}
+
 	// 移動先のフォルダパス
 	postOriginalFolder := filepath.Join(originalImageFolder, postFolder)
 	postCompressedFolder := filepath.Join(compressedImageFolder, postFolder)
@@ -104,6 +95,15 @@ func (h *MoveFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 移動後の画像データパス
 		postOriginalPath := filepath.Join(postOriginalFolder, targetFilename)
 		postCompressedPath := filepath.Join(postCompressedFolder, targetFilename)
+
+		// Validate the request paths
+		if module.ValidateRequestPath(originalImageFolder, preOriginalPath) ||
+			module.ValidateRequestPath(compressedImageFolder, preCompressedPath) ||
+			module.ValidateRequestPath(originalImageFolder, postOriginalPath) ||
+			module.ValidateRequestPath(compressedImageFolder, postCompressedPath) {
+			log.Println("Invalid file paths detected during validation")
+			continue
+		}
 
 		// 画像ファイルの移動処理
 		// ロールバック処理未実装

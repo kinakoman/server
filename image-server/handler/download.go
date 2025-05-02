@@ -32,7 +32,7 @@ func (h *DownloadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	compressedImageFolder := os.Getenv("COMPRESSED_IMAGE_STORAGE_PATH")
 
 	// 画像パスのバリデーション
-	if module.ValdateRequestPath(originalImageFolder, imagePath) || module.ValdateRequestPath(compressedImageFolder, imagePath) {
+	if module.ValidateRequestPath(originalImageFolder, imagePath) || module.ValidateRequestPath(compressedImageFolder, imagePath) {
 		log.Println("now")
 		http.Error(w, "invalid folder name", http.StatusBadGateway)
 		return

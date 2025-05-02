@@ -32,7 +32,7 @@ func (h *CreateFolderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	compressedImageFolder := os.Getenv("COMPRESSED_IMAGE_STORAGE_PATH")
 
 	// フォルダ名のバリデーションを実行
-	if module.ValdateRequestPath(originalImageFolder, targetFolder) || module.ValdateRequestPath(compressedImageFolder, targetFolder) {
+	if module.ValidateRequestPath(originalImageFolder, targetFolder) || module.ValidateRequestPath(compressedImageFolder, targetFolder) {
 		http.Error(w, "フォルダ名に不正な文字が使用されています。", http.StatusBadGateway)
 		return
 	}
