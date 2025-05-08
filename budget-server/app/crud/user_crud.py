@@ -1,7 +1,8 @@
 # データベースの操作関数を定義するファイル
-from app.schemas import CreateExpenseRequest
+from app.schemas import CreateExpenseRequest,GetExpenseRequest
 from app.database import SessionLocal
 from app.models import Expenses
+from fastapi import HTTPException
 
 
 # def get_user_by_name(name: str):
@@ -44,6 +45,18 @@ from app.models import Expenses
 #     finally:
 #         db.close()
 
+def get_expense_by_year(data:GetExpenseRequest):
+ 
+    db=SessionLocal()
+    try:
+        expenses = db.query(Expenses).filter(Expenses.year == data.year).all()
+        return expenses
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Database Error")
+    finally:
+        db.close()
+
                 
 def create_expense(data:CreateExpenseRequest):
     db=SessionLocal()
@@ -63,5 +76,8 @@ def create_expense(data:CreateExpenseRequest):
         db.commit()
         db.refresh(new_expense)
         return new_expense
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Database Error")
     finally:
         db.close()

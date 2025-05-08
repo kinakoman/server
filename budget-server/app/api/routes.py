@@ -1,8 +1,8 @@
 # APIのエンドポイントを設定
 from fastapi import APIRouter,HTTPException
-from app.schemas import CreateExpenseRequest,CreateExpenseResponse
-from app.services.user_service import create_expense_service
-# from fastapi import Query
+from app.schemas import CreateExpenseRequest,CreateExpenseResponse,GetExpenseRequest,GetExpenseResponse
+from app.services.user_service import create_expense_service,get_expense_by_year_service
+from fastapi import Query
 
 router = APIRouter()
 
@@ -21,6 +21,19 @@ router = APIRouter()
 # def record(data:ExpenseRequest):
 #     # print(data)
 #     return user_service.record(data)
+
+@router.get("/budget/get-expense-by-year",response_model=list[GetExpenseResponse])
+def get_expense_by_year_method(year:int=Query(...,description="year")):
+    print(year)
+    
+    request=GetExpenseRequest(year=year)
+    print(request.year)
+    try:
+        return get_expense_by_year_service(request)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/budget/create-expense",response_model=CreateExpenseResponse)
 def create_expense_method(request:CreateExpenseRequest):
