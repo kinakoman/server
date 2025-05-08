@@ -1,5 +1,7 @@
 import requests
 
-res=requests.post('http://localhost:8000/user/', json={"name":"Tanaka", "age":40})
+# res=requests.post('http://localhost:8000/budget/get', json={"user":"Tanaka", "amount":2000})
+res=requests.get('http://localhost:8000/budget/get?year=2025&month=12&day=25')
+
 
 print(res.json())

@@ -1,15 +1,19 @@
 # httpリクエストのデータ型を定義
-
 from pydantic import BaseModel
+from typing import Optional
 
-class UserCreate(BaseModel):
-    name: str
-    age: int
+
     
-class UserResponse(BaseModel):
-    id: int
-    name: str
-    age: int
+class CreateExpenseRequest(BaseModel):
+    user: str
+    expense:int
+    year:int
+    month:int
+    day:int
+    description:str
+    calculation:Optional[bool] = True
+    settlement:Optional[bool] = False
+    fixed:Optional[bool] = False
 
-    # class Config:
-    #     orm_mode = True
+class CreateExpenseResponse(BaseModel):
+    id :int

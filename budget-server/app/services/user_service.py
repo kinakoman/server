@@ -1,12 +1,32 @@
 # エンドポイントに設定するハンドラを定義する
-from app.schemas import UserCreate,UserResponse
-from app.crud import user_crud
+from app.schemas import CreateExpenseRequest,CreateExpenseResponse
+from app.crud.user_crud import create_expense
 from fastapi import HTTPException
 
-def create_user(user: UserCreate)->UserResponse:
-    db_user=user_crud.get_user_by_name(user.name)
-    if db_user:
-        raise HTTPException(status_code=400, detail="User already exists")
+# def get_budget(date:BudgetGet) -> BudgetResponse:
+#     budget = get_budget_by_month(date)
+#     if not budget:
+#         raise HTTPException(status_code=404, detail="Budget not found")
     
-    new_user=user_crud.create_user(user)
-    return UserResponse(id=new_user.id, name=new_user.name, age=new_user.age)
+#     # return BudgetResponse(month=budget.month, amount=budget.amount)
+#     return budget
+
+# def record(data:ExpenseRequest)->ExpenseOut:
+#     new_record=record_budget(data)
+    
+#     if not new_record:
+#          raise HTTPException(status_code=404, detail="New Record not found")
+    
+#     print(new_record.id)
+#     # return ExpenseOut(id=new_record.id)
+#     return new_record
+
+def create_expense_service(requset:CreateExpenseRequest)->CreateExpenseResponse:
+    new_record=create_expense(requset)
+    
+    if not new_record:
+         raise HTTPException(status_code=404, detail="New Record not found")
+    
+    print(new_record.id)
+    # return ExpenseOut(id=new_record.id)
+    return new_record
